@@ -15,7 +15,7 @@ You will need to provide this script with parameters:
 For Example:                   
   `./AutoLineup.py 123456 1 2018 my_username@gmail.com my_password my_email@yahoo.com FantasyBasketballNotification@gmail.com notification_password`
 
-I recommend wrapping all this into a bash script ad simply running something like:                     
+I recommend wrapping all this into a bash script and simply running something like:                     
   `./setMyLineup.sh`       
 
 Where the contents of setMyLineup.sh look similar to:                      
