@@ -3,22 +3,24 @@
 This is a script that will update your ESPN Fantasy Basketball lineup.
 
 You will need to provide this script with parameters:
-    1. Your League ID
-    2. Your Team ID
-    3. Your Season ID
-    4. Your ESPN Username
-    5. Your ESPN Password
-    6. Your Personal Email address
-    7. Notification Email address
-    8. Notification Email's Password
+   1. Your League ID
+   2. Your Team ID
+   3. Your Season ID
+   4. Your ESPN Username
+   5. Your ESPN Password
+   6. Your Personal Email address
+   7. Notification Email address
+   8. Notification Email's Password
 
 For Example:                   
   `./AutoLineup.py 123456 1 2018 my_username@gmail.com my_password my_email@yahoo.com FantasyBasketballNotification@gmail.com notification_password`
 
 I recommend wrapping all this into a bash script ad simply running something like:                     
   `./setMyLineup.sh`       
-where the contents of setMyLineup.sh look similar to:                      
-```#!/bin/bash
+
+Where the contents of setMyLineup.sh look similar to:                      
+```
+#!/bin/bash
 
 leagueid=123456
 teamid=1
