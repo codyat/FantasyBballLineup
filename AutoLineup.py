@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
 
+###########################################################
+### Script was written to automatically set your lineup
+###      Author: Cody Troyer
+###      Date: January 23, 2018
+###
+###      Version: 1.1
+###########################################################
+
+#################################################
+###   Changelog
+#################################################
+# v1.0    Initial Release
+# v1.1    Removed hardcoded values for public access
+#
+#################################################
+
 import sys
 import time
 import smtplib
@@ -30,9 +46,11 @@ class AutoLineup(unittest.TestCase):
 	def getLeagueName(self):
 		return WebDriverWait(self.driver, 10).until(lambda driver: self.driver.find_element_by_xpath('//*[@id="content"]/div/div[4]/div/div/div[3]/div[1]/div[2]/div[1]/ul[1]/li/a')).get_attribute('innerHTML').split('<strong>', 1)[1].split('</strong>', 1)[0]
 
+	# Gets today's Date
 	def getDate(self):
 		return WebDriverWait(self.driver, 10).until(lambda driver: self.driver.find_element_by_class_name("date-on").find_element_by_xpath(".//div").text)
 
+	# Prints a header with Owner's name, Team's name and League's name 
 	def printHeader(self):
 		print("Looking at", self.getOwnerName() + "'s Team")
 		print("{:=^60}".format(""))
@@ -41,15 +59,15 @@ class AutoLineup(unittest.TestCase):
 		print("{:=^60}".format(""))
 		print()
 
-	# Sends email notifiying user that the script was unable to add players with games scheduled to the starting lineup
+	# Sends email notifiying user that the script was able to fit all players in the lineup OR if not, notify the user of which players could NOT be added due to scheduling confict or injuries
 	def sendEmail(self):
 		print("Sending email...")
 		emailServer = smtplib.SMTP('smtp.gmail.com', 587)
 		emailServer.ehlo()
 		emailServer.starttls()
 
-		email = self.NOTIF_EMAIL   					# Insert email you created here
-		password = self.NOTIF_EMAIL_PW 					# Insert password for email here
+		email = self.NOTIF_EMAIL 
+		password = self.NOTIF_EMAIL_PW
 
 		recipientEmail = str(self.EMAIL)
 
@@ -71,6 +89,7 @@ class AutoLineup(unittest.TestCase):
 		emailServer.quit()
 		print("Sent.")
 
+	# Removes players that are not scheduled to play in todays matches from the total players list
 	def removePlayersNotPlaying(self):
 		global playerList
 		playerList = players[:]
@@ -82,6 +101,7 @@ class AutoLineup(unittest.TestCase):
 		for i in playerList2Remove:
 			playerList.remove(i)
 
+	# Checks all rows of the standard clubhouse roster view and generates a list of all players in your roster
 	def generatePlayerList(self):
 		driver = self.driver
 
@@ -117,6 +137,7 @@ class AutoLineup(unittest.TestCase):
 		
 		self.removePlayersNotPlaying()
 
+	# Creates a list of all the players left on the bench
 	def generateBenchedList(self):
 		global benched
 		benched = []
@@ -136,13 +157,15 @@ class AutoLineup(unittest.TestCase):
 					
 					benched.append(player)		
 
+	# Narrows down the playerlist by the number of positions the players play
 	def narrowPlayersByPos(self, num):
 		tempPlayers=[]
 		for i in playerList:
 			if len(i[1]) == num:
 				tempPlayers.append(i)
 		return tempPlayers
-		
+	
+	# narrows down playerlist by removing the players that have already been placed in the optimal lineup
 	def narrowPlayersByPlayersLeft(self, optimalLineup):
 		tempPlayers = playerList[:]
 		for i in optimalLineup:
@@ -151,6 +174,7 @@ class AutoLineup(unittest.TestCase):
 					tempPlayers.remove(j)
 		return tempPlayers
 
+	# Creates an optimal lineup that will maximaze the number of players in your lineup
 	def optimizeLineup(self):
 		driver = self.driver
 		global optimalLineup
@@ -164,6 +188,7 @@ class AutoLineup(unittest.TestCase):
 		optimalLineup["UTIL2"] = ""
 		optimalLineup["UTIL3"] = ""
 
+		# Fill positions PG, PF, SF, SG, C 
 		for it in range(1,3,1):
 			slots2Remove = []
 			playerList2Remove = []
@@ -198,7 +223,7 @@ class AutoLineup(unittest.TestCase):
 				narrowPlayers.remove(i)
 				break
 
-		# now fill the Util Spots
+		# Now fill the Util Spots
 		utilCount = 1
 		playerList2Remove = []
 		for i in narrowPlayers:
@@ -212,6 +237,7 @@ class AutoLineup(unittest.TestCase):
 		for i in playerList2Remove:
 			narrowPlayers.remove(i)
 
+	# Moves all players to the bench so there's not conflict with button mappings
 	def moveAllPlayersToBench(self):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
@@ -240,11 +266,10 @@ class AutoLineup(unittest.TestCase):
 		self.driver.refresh()
 		time.sleep(3)
 
-
+	# moves optimalLineup players from the bench to their positions in the lineup
 	def setLineup(self):
 		driver = self.driver
 		print("Setting Lineup...")
-
 
 		utilCount = 1
 		for i in driver.find_elements_by_class_name("pncPlayerRow"):
@@ -265,13 +290,14 @@ class AutoLineup(unittest.TestCase):
 		self.submitLineup()
 		print()
 
+	# Takes in a name (ie "Kobe Bryant") and returns his buttonID (ie moveButton_12832)
 	def name2ButtonID(self, name):
 		for j in playerList:
 			if j[0] == name:
 				return j[4]
 		return ""
 
-			
+	# Clicks the button with the Move ID (mid) to the playerRow passed in
 	def movePlayer(self, mid, playerRow):
 		if mid == "": return
 		driver = self.driver
@@ -287,6 +313,7 @@ class AutoLineup(unittest.TestCase):
 		driver.execute_script("arguments[0].scrollIntoView();", hereButton)
 		hereButton.click()
 	
+	# clicks the submit button
 	def submitLineup(self):
 		driver = self.driver
 		wait = WebDriverWait(driver, 10)
